@@ -1,0 +1,3 @@
+/Users/taylan/CLionProjects/pa2/blockfall/cmake-build-debug/CMakeFiles/blockfall.dir
+/Users/taylan/CLionProjects/pa2/blockfall/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/taylan/CLionProjects/pa2/blockfall/cmake-build-debug/CMakeFiles/rebuild_cache.dir
