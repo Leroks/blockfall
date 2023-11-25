@@ -15,11 +15,32 @@ public:
 
     bool operator==(const Block& other) const {
         // TODO: Overload the == operator to compare two blocks based on their shapes
-        return false;
+        if(shape[0].size() != other.shape[0].size() || shape.size() != other.shape.size()){
+            return false;
+        }
+        for(int i = 0; i < shape.size(); i++){
+            for(int j = 0; j < shape[0].size(); j++){
+                if(shape[i][j] != other.shape[i][j]){
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     bool operator!=(const Block& other) const {
         // TODO: Overload the != operator to compare two blocks based on their shapes
+        if(shape[0].size() != other.shape[0].size() || shape.size() != other.shape.size()){
+            return true;
+        }
+        for(int i = 0; i < shape.size(); i++){
+            for(int j = 0; j < shape[0].size(); j++){
+                if(shape[i][j] != other.shape[i][j]){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 };
