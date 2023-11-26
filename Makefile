@@ -2,9 +2,9 @@
 CXX = g++
 CXXFLAGS = -g -std=c++11
 SOURCES = main.cpp BlockFall.cpp GameController.cpp LeaderboardEntry.cpp Leaderboard.cpp
-HEADERS = BlockFall.h Block.h GameController.h LeaderboardEntry.h Leaderboard.cpp
+HEADERS = BlockFall.h Block.h GameController.h LeaderboardEntry.h
 OBJECTS = $(SOURCES:.cpp=.o)
-TARGET = blockfall
+TARGET = main
 
 # Default rule to build the project
 all: $(TARGET)
