@@ -44,50 +44,57 @@ public:
         return false;
     }
 
-    static vector<vector<bool>> rotate90degrees(const vector<vector<bool>> &inputShapeGiven) {
-        vector<vector<bool>> result;
-        for (int i = inputShapeGiven[0].size() - 1; i >= 0; --i) {
-            vector<bool> newRow;
-            newRow.reserve(inputShapeGiven.size());
-            for (int j = 0; j < inputShapeGiven.size(); ++j) {
-                newRow.push_back(inputShapeGiven[inputShapeGiven.size() - 1 - j][i]);
-            }
-            result.push_back(newRow);
-        }
-        return result;
-    }
-
-    bool isShapeInList(const vector<vector<bool>> &shapeGiven) {
-        Block *tempBlock = this;
-        while (tempBlock != nullptr) {
-            if (tempBlock->shape == shapeGiven) {
-                return true;
-            }
-            tempBlock = tempBlock->right_rotation;
-        }
-        return false;
-    }
-
-
     void createCircularLinkedList() {
         Block *start = this;
         Block *current = start;
-        vector<vector<bool>> tempShape = rotate90degrees(start->shape);
+        vector<vector<bool>> tempShape;
 
-        for (int i = 0; i < 3; ++i) {
-            if (!isShapeInList(tempShape)) {
+        for (int i = start->shape[0].size() - 1; i >= 0; --i) {
+            vector<bool> newRow;
+            newRow.reserve(start->shape.size());
+            for (int j = 0; j < start->shape.size(); ++j) {
+                newRow.push_back(start->shape[start->shape.size() - 1 - j][i]);
+            }
+            tempShape.push_back(newRow);
+        }
+
+        int counter = 0;
+        while (counter < 3) {
+            Block *tempBlock = this;
+            bool shapeExists = false;
+            while (tempBlock != nullptr) {
+                if (tempBlock->shape == tempShape) {
+                    shapeExists = true;
+                    break;
+                }
+                tempBlock = tempBlock->right_rotation;
+            }
+
+            if (!shapeExists) {
                 current->right_rotation = new Block;
                 current->right_rotation->shape = tempShape;
                 current->right_rotation->next_block = start->next_block;
                 current->right_rotation->left_rotation = current;
                 current = current->right_rotation;
             }
-            tempShape = rotate90degrees(tempShape);
+
+            vector<vector<bool>> newShape;
+            for (int i = tempShape[0].size() - 1; i >= 0; --i) {
+                vector<bool> newRow;
+                newRow.reserve(tempShape.size());
+                for (int j = 0; j < tempShape.size(); ++j) {
+                    newRow.push_back(tempShape[tempShape.size() - 1 - j][i]);
+                }
+                newShape.push_back(newRow);
+            }
+            tempShape = newShape;
+            counter++;
         }
 
         current->right_rotation = start;
         start->left_rotation = current;
     }
+
 
 };
 

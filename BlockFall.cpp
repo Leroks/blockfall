@@ -25,11 +25,11 @@ void BlockFall::read_blocks(const string &input_file) {
     }
     bool isFileOpen = false;
     vector<bool> lineData;
-    char tmp;
+    char i;
     Block *previousBlock;
     long int determiner = 0;
-    while (inputFile >> tmp) {
-        if (tmp == '[') {
+    while (inputFile >> i) {
+        if (i == '[') {
             isFileOpen = true;
             if (initial_block == nullptr) {
                 initial_block = currentBlock;
@@ -42,19 +42,21 @@ void BlockFall::read_blocks(const string &input_file) {
             bool continueReading = true;
             while (continueReading) {
                 getline(inputFile, line);
-                istringstream iss(line);
+                istringstream basicIstringstream(line);
                 string search = "]";
                 size_t found = line.find(search);
                 if (found != string::npos) {
                     continueReading = false;
                 }
                 char num;
-                while (iss >> num) {
+                while (basicIstringstream >> num) {
                     if (num == '1') {
                         lineData.push_back(true);
-                    } else if (num == '0') {
+                    }
+                    if (num == '0') {
                         lineData.push_back(false);
-                    } else if (num == ']') {
+                    }
+                    if (num == ']') {
                         break;
                     }
                 }
@@ -99,6 +101,9 @@ void BlockFall::read_blocks(const string &input_file) {
         currentBlock = currentBlock->right_rotation;
         delete pBlock;
     }
+
+
+    inputFile.close();
 }
 
 
@@ -137,17 +142,14 @@ void BlockFall::initialize_grid(const string &input_file) {
 
 
 BlockFall::~BlockFall() {
-    Block *tmp = initial_block;
-    while (tmp != nullptr) {
-        Block *tmp2 = tmp;
-        tmp2->left_rotation->right_rotation = nullptr;
-        tmp2->left_rotation = nullptr;
-        tmp = tmp->next_block;
-        while (tmp2 != nullptr) {
-            Block *tmp3 = tmp2;
-            tmp2 = tmp2->right_rotation;
-
-            delete tmp3;
+    Block *pBlock = initial_block;
+    while (pBlock != nullptr) {
+        Block *pBlock2 = pBlock;
+        pBlock2->left_rotation->right_rotation = nullptr;
+        pBlock2->left_rotation = nullptr;
+        pBlock = pBlock->next_block;
+        while (pBlock2 != nullptr) {
+            pBlock2 = pBlock2->right_rotation;
         }
     }
 }
