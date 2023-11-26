@@ -14,100 +14,89 @@ BlockFall::BlockFall(string grid_file_name, string blocks_file_name, bool gravit
 }
 
 void BlockFall::read_blocks(const string &input_file) {
-    // TODO: Read the blocks from the input file and initialize "initial_block" and "active_rotation" member variables
-    // TODO: For every block, generate its rotations and properly implement the multilevel linked list structure
-    //       that represents the game blocks, as explained in the PA instructions.
-    // TODO: Initialize the "power_up" member variable as the last block from the input file (do not add it to the linked list!)
     fstream inputFile(input_file);
-    Block* curr = new Block;
-    Block * before ;
+    Block *currentBlock = new Block;
+    Block *previousBlock;
     std::vector<bool> lineData;
-    bool isFile = false;
+    bool isFileOpen = false;
 
-    if (inputFile.is_open()) {
-
-        char tmp;
-        while (inputFile >> tmp){
-            if (tmp == '['){
-                isFile = true;
-                if (initial_block == nullptr){
-                    initial_block = curr;
-                }else{
-                    before = curr;
-                    curr = curr->next_block;
-
-                }
-                curr->shape.clear();
-                std::string line;
-                bool continueReading = true;
-                int kl = 0;
-                while (continueReading) {
-                    kl++;
-                    std::getline(inputFile, line);
-                    std::istringstream iss(line);
-                    std::string search = "]";
-                    size_t found = line.find(search);
-                    if (found != std::string::npos) {
-                        continueReading = false;
-
-                    }
-                    char num;
-                    while (iss >> num) {
-                        if (num == '1'){
-                            lineData.push_back(true);
-                        }else if (num == '0'){
-                            lineData.push_back(false);
-                        }else if (num == ']'){
-                            break;
-                        }
-                    }
-                    curr->shape.push_back(lineData);
-
-                    lineData.clear();
-
-                }
-                curr->next_block = new Block;
-                curr->createCircularLinkedList();
-            }
-
-
-        }
-    }else{
+    if (!inputFile.is_open()) {
         std::cout << "Failed to open the file." << std::endl;
-
-    }
-    if (!isFile){
-        delete curr;
         return;
     }
-    delete curr->next_block;
-    if (initial_block==curr){
+
+    char tmp;
+    while (inputFile >> tmp) {
+        if (tmp == '[') {
+            isFileOpen = true;
+            if (initial_block == nullptr) {
+                initial_block = currentBlock;
+            } else {
+                previousBlock = currentBlock;
+                currentBlock = currentBlock->next_block;
+            }
+            currentBlock->shape.clear();
+            std::string line;
+            bool continueReading = true;
+            int lineIndex = 0;
+            while (continueReading) {
+                lineIndex++;
+                std::getline(inputFile, line);
+                std::istringstream iss(line);
+                std::string search = "]";
+                size_t found = line.find(search);
+                if (found != std::string::npos) {
+                    continueReading = false;
+                }
+                char num;
+                while (iss >> num) {
+                    if (num == '1') {
+                        lineData.push_back(true);
+                    } else if (num == '0') {
+                        lineData.push_back(false);
+                    } else if (num == ']') {
+                        break;
+                    }
+                }
+                currentBlock->shape.push_back(lineData);
+                lineData.clear();
+            }
+            currentBlock->next_block = new Block;
+            currentBlock->createCircularLinkedList();
+        }
+    }
+
+    if (!isFileOpen) {
+        delete currentBlock;
+        return;
+    }
+    delete currentBlock->next_block;
+    if (initial_block == currentBlock) {
         initial_block = nullptr;
     }
-    for (int i = 0 ; i < 4 ; i++){
-        curr->next_block = nullptr;
-        curr = curr->left_rotation;
-        if (before != nullptr){
-            before->next_block = nullptr;
-            before = before->left_rotation;
+    int rotationIndex = 0;
+    while (rotationIndex < 4) {
+        currentBlock->next_block = nullptr;
+        currentBlock = currentBlock->left_rotation;
+        if (previousBlock != nullptr) {
+            previousBlock->next_block = nullptr;
+            previousBlock = previousBlock->left_rotation;
         }
-
+        rotationIndex++;
     }
-    power_up = curr->shape;
-    //delete all rotations of the last block
-    if (initial_block!= nullptr){
+    power_up = currentBlock->shape;
+    if (initial_block != nullptr) {
         active_rotation = initial_block;
-
     }
-    curr->left_rotation->right_rotation = nullptr;
-    curr->left_rotation = nullptr;
-    while (curr != nullptr){
-        Block *tmp = curr;
-        curr = curr->right_rotation;
+    currentBlock->left_rotation->right_rotation = nullptr;
+    currentBlock->left_rotation = nullptr;
+    while (currentBlock != nullptr) {
+        Block *tmp = currentBlock;
+        currentBlock = currentBlock->right_rotation;
         delete tmp;
     }
-
 }
+
 
 void BlockFall::initialize_grid(const string &input_file) {
     // TODO: Initialize "rows" and "cols" member variables
