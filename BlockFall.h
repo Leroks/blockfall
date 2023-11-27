@@ -34,6 +34,9 @@ public:
 
     void initialize_grid(const string & input_file); // Initializes the grid using the command-line argument 1 in main
     void read_blocks(const string & input_file); // Reads the input file and calls the read_block() function for each block;
+
+    long int pos;
+    long int gameEnd;
 };
 
 

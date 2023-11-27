@@ -12,6 +12,7 @@ BlockFall::BlockFall(string grid_file_name, string blocks_file_name, bool gravit
     initialize_grid(grid_file_name);
     read_blocks(blocks_file_name);
     leaderboard.read_from_file(leaderboard_file_name);
+    pos = 0;
 }
 
 void BlockFall::read_blocks(const string &input_file) {

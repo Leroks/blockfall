@@ -8,6 +8,13 @@ using namespace std;
 class GameController {
 public:
     bool play(BlockFall &game, const string &commands_file); // Function that implements the gameplay
+    int downAmount(BlockFall& game,int x, int y);
+
+    bool checkCollision(long pos, BlockFall &fall);
+
+    bool checkFullRow(BlockFall &fall, int i);
+
+    unsigned long clearRow(BlockFall &fall, int i);
 };
 
 
