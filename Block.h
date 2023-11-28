@@ -19,6 +19,9 @@ public:
             return false;
         }
         for (int i = 0; i < shape.size(); i++) {
+            if (shape[i].size() != other.shape[i].size()) {
+                return false;
+            }
             for (int j = 0; j < shape[0].size(); j++) {
                 if (shape[i][j] != other.shape[i][j]) {
                     return false;
@@ -71,11 +74,15 @@ public:
             }
 
             if (!shapeExists) {
-                current->right_rotation = new Block;
-                current->right_rotation->shape = tempShape;
-                current->right_rotation->next_block = start->next_block;
-                current->right_rotation->left_rotation = current;
-                current = current->right_rotation;
+                if(current->right_rotation == nullptr)
+                {
+                    current->right_rotation = new Block;
+                    current->right_rotation->shape = tempShape;
+                    current->right_rotation->next_block = start->next_block;
+                    current->right_rotation->left_rotation = current;
+                    current = current->right_rotation;
+                    break;
+                }
             }
 
             vector<vector<bool>> newShape;

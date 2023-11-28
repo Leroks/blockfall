@@ -90,13 +90,16 @@ void BlockFall::read_blocks(const string &input_file) {
         rotationIndex += rotationIndex1;
         rotationIndex++;
     }
-    power_up = currentBlock->shape;
     if (initial_block != nullptr) {
         active_rotation = initial_block;
     }
+    power_up = currentBlock->shape;
     currentBlock->left_rotation->right_rotation = nullptr;
     currentBlock->left_rotation = nullptr;
     while (currentBlock != nullptr) {
+        if(currentBlock == initial_block){
+            break;
+        }
         Block *pBlock = currentBlock;
         currentBlock = currentBlock->right_rotation;
         delete pBlock;
@@ -144,10 +147,16 @@ void BlockFall::initialize_grid(const string &input_file) {
 BlockFall::~BlockFall() {
     Block *pBlock = initial_block;
     while (pBlock != nullptr) {
+        if(pBlock == initial_block){
+            break;
+        }
         Block *pBlock2 = pBlock;
         pBlock2->left_rotation->right_rotation = nullptr;
         pBlock2->left_rotation = nullptr;
         while (pBlock2 != nullptr) {
+            if(pBlock2 == initial_block){
+                break;
+            }
             pBlock2 = pBlock2->right_rotation;
         }
         pBlock = pBlock->next_block;
