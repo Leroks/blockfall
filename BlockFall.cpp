@@ -12,7 +12,6 @@ BlockFall::BlockFall(string grid_file_name, string blocks_file_name, bool gravit
     initialize_grid(grid_file_name);
     read_blocks(blocks_file_name);
     leaderboard.read_from_file(leaderboard_file_name);
-    pos = 0;
 }
 
 void BlockFall::read_blocks(const string &input_file) {
@@ -24,14 +23,12 @@ void BlockFall::read_blocks(const string &input_file) {
         cout << "Failed to open the file." << endl;
         return;
     }
-    bool isFileOpen = false;
-    vector<bool> lineData;
+    vector<bool> liner;
     char i;
     Block *previousBlock;
     long int determiner = 0;
     while (inputFile >> i) {
         if (i == '[') {
-            isFileOpen = true;
             if (initial_block == nullptr) {
                 initial_block = currentBlock;
             } else {
@@ -39,37 +36,39 @@ void BlockFall::read_blocks(const string &input_file) {
                 currentBlock = currentBlock->next_block;
             }
             currentBlock->shape.clear();
+
             string line;
-            bool continueReading = true;
-            while (continueReading) {
+
+            bool read = false;
+            while (!read) {
                 getline(inputFile, line);
                 istringstream basicIstringstream(line);
                 string search = "]";
                 size_t found = line.find(search);
                 if (found != string::npos) {
-                    continueReading = false;
+                    read = true;
                 }
-                char num;
-                while (basicIstringstream >> num) {
-                    if (num == '1') {
-                        lineData.push_back(true);
+                char number;
+                while (basicIstringstream >> number) {
+                    if (number == '0') {
+                        liner.push_back(false);
                     }
-                    if (num == '0') {
-                        lineData.push_back(false);
+                    if (number == '1') {
+                        liner.push_back(true);
                     }
-                    if (num == ']') {
+                    if (number == ']') {
                         break;
                     }
                 }
-                currentBlock->shape.push_back(lineData);
-                lineData.clear();
+                currentBlock->shape.push_back(liner);
+                liner.clear();
             }
             currentBlock->next_block = new Block;
             currentBlock->createCircularLinkedList();
         }
     }
 
-    if (!isFileOpen) {
+    if (!inputFile.is_open()) {
         delete currentBlock;
         return;
     }
@@ -148,9 +147,9 @@ BlockFall::~BlockFall() {
         Block *pBlock2 = pBlock;
         pBlock2->left_rotation->right_rotation = nullptr;
         pBlock2->left_rotation = nullptr;
-        pBlock = pBlock->next_block;
         while (pBlock2 != nullptr) {
             pBlock2 = pBlock2->right_rotation;
         }
+        pBlock = pBlock->next_block;
     }
 }
