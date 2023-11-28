@@ -74,11 +74,10 @@ public:
             }
 
             if (!shapeExists) {
-                if(current->right_rotation == nullptr)
-                {
+                if (current->right_rotation == nullptr) {
                     current->right_rotation = new Block;
-                    current->right_rotation->shape = tempShape;
                     current->right_rotation->next_block = start->next_block;
+                    current->right_rotation->shape = tempShape;
                     current->right_rotation->left_rotation = current;
                     current = current->right_rotation;
                     break;
