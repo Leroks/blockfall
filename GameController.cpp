@@ -40,17 +40,21 @@ bool GameController::play(BlockFall &game, const string &commands_file) {
     while (getline(inputFile, line)) {
         if (game.gameEnd != 0) break;
         if (line == "ROTATE_LEFT") {
-            if(!checkCollision(game.pos,game)){
-            game.active_rotation = game.active_rotation->left_rotation;}
+            if (!checkCollision(game.pos, game)) {
+                game.active_rotation = game.active_rotation->left_rotation;
+            }
         } else if (line == "ROTATE_RIGHT") {
-            if(!checkCollision(game.pos,game)){
-            game.active_rotation = game.active_rotation->right_rotation;}
+            if (!checkCollision(game.pos, game)) {
+                game.active_rotation = game.active_rotation->right_rotation;
+            }
         } else if (line == "MOVE_LEFT") {
-            if(!checkCollision(game.pos,game)){
-            game.pos--;}
+            if (!checkCollision(game.pos, game)) {
+                game.pos--;
+            }
         } else if (line == "MOVE_RIGHT") {
-            if(!checkCollision(game.pos,game)){
-            game.pos++;}
+            if (!checkCollision(game.pos, game)) {
+                game.pos++;
+            }
         } else if (line == "DROP") {
             if (game.gravity_mode_on) {
                 dropWithGravity(game);
@@ -84,45 +88,106 @@ bool GameController::play(BlockFall &game, const string &commands_file) {
             if (checkCollision(game.pos, game)) {
                 game.gameEnd = 2;
             }
+        } else if (line == "") {
+            continue;
         } else if (line == "GRAVITY_SWITCH") {
-            return true;
+            changeGravity(game);
         } else if (line == "PRINT_GRID") {
-
+            printGrid(game);
         } else {
-            cout << "Invalid command" << endl;
+            cout << "Unknown command: " << line << endl;
+        }
+
+        if (game.active_rotation == nullptr) {
+            game.gameEnd = 1;
+        }
+        if (checkCollision(game.pos, game)) {
+            game.gameEnd = 2;
         }
     }
 
-    bool result = false;
+    bool ans = false;
 
-    if (game.gameEnd == 2) {
+
+    if (game.gameEnd == 1) {
+        cout << "YOU WIN!\nNo more blocks.\nFinal grid and score:\n" << endl;
+        ans = true;
+    } else if (game.gameEnd == 0) {
+        cout << "GAME FINISHED!\nNo more commands.\nFinal grid and score:\n" << endl;
+        ans = true;
+    } else if (game.gameEnd == 2) {
         cout << "GAME OVER!\nNext block that couldn't fit:" << endl;
-        vector<vector<bool>> shape = game.active_rotation->shape;
-        for (auto &i: shape) {
-            for (auto &&j: i) {
-                if (j) {
-                    cout << "██";
+        vector<vector<bool>> x = game.active_rotation->shape;
+        for (int i = 0; i < x.size(); i++) {
+            for (int j = 0; j < x[i].size(); j++) {
+                if (x[i][j] == 1) {
+                    cout << occupiedCellChar;
                 } else {
-                    cout << "▒▒";
+                    cout << unoccupiedCellChar;
                 }
             }
             cout << endl;
         }
         cout << "\nFinal grid and score:\n" << endl;
     }
-    if (game.gameEnd == 1) {
-        cout << "YOU WIN!\nNo more blocks.\nFinal grid and score:\n" << endl;
-        result = true;
+    game.leaderboard.insert_new_entry(new LeaderboardEntry(game.current_score, std::time(nullptr), game.player_name));
+    cout << "Score: " << game.current_score << endl;
+    if (game.leaderboard.head_leaderboard_entry != nullptr) {
+        int high = max(game.current_score, game.leaderboard.head_leaderboard_entry->score);
+        cout << "High Score: " << high << endl;
+    } else {
+        cout << "High Score: " << game.current_score << endl;
     }
-    if (game.gameEnd == 0) {
-        cout << "GAME FINISHED!\nNo more commands.\nFinal grid and score:\n" << endl;
-        result = true;
-    }
-
     printEmptyGrid2(game);
     cout << endl;
+    game.leaderboard.print_leaderboard();
+    cout << endl;
+    cout << endl;
+    cout << endl;
+    game.leaderboard.write_to_file(game.leaderboard_file_name);
+    return ans;
 
-    return result;
+}
+
+void GameController::printGrid(BlockFall &game) {
+    cout << "Score: " << game.current_score << endl;
+    if (game.leaderboard.head_leaderboard_entry != nullptr) {
+        int high = max(game.current_score, game.leaderboard.head_leaderboard_entry->score);
+        cout << "High Score: " << high << endl;
+    } else {
+        cout << "High Score: " << game.current_score << endl;
+    }
+    if (game.active_rotation == nullptr || checkCollision(game.pos, game) || game.gameEnd != 0) {
+        printEmptyGrid(game, false);
+    } else {
+        printEmptyGrid(game, true);
+    }
+
+}
+
+void GameController::changeGravity(BlockFall &game) {
+    game.gravity_mode_on = !game.gravity_mode_on;
+    if (game.gravity_mode_on) {
+        //make everything fall
+        for (int i = game.grid.size() - 1; i >= 0; i--) {
+            for (int j = 0; j < game.grid[i].size(); j++) {
+                if (game.grid[i][j] == 1) {
+                    int k = i;
+                    while (k < game.grid.size() - 1 && game.grid[k + 1][j] == 0) {
+                        game.grid[k + 1][j] = 1;
+                        game.grid[k][j] = 0;
+                        k++;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < game.grid.size(); i++) {
+            if (isRowFull(game, i)) {
+
+                game.current_score += clearRow(game, i);
+            }
+        }
+    }
 }
 
 bool GameController::checkCollision(long pos, BlockFall &fall) {

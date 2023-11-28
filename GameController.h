@@ -8,7 +8,7 @@ using namespace std;
 class GameController {
 public:
     bool play(BlockFall &game, const string &commands_file); // Function that implements the gameplay
-    int downAmount(BlockFall& game,int x, int y);
+    static int downAmount(BlockFall& game,int x, int y);
 
     bool checkCollision(long pos, BlockFall &fall);
 
@@ -31,6 +31,10 @@ public:
     int clear(BlockFall &fall);
 
     bool isRowFull(BlockFall &fall, int i);
+
+    void changeGravity(BlockFall &game);
+
+    void printGrid(BlockFall &game);
 };
 
 
