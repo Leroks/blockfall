@@ -29,84 +29,46 @@ bool GameController::play(BlockFall &game, const string &commands_file) {
         return false;
     }
     string line;
+    if (game.active_rotation == nullptr) {
+        game.gameEnd = 1;
+    }
+    if (checkCollision(game.pos, game)) {
+        game.gameEnd = 2;
+
+    }
 
     while (getline(inputFile, line)) {
         if (game.gameEnd != 0) break;
         if (line == "ROTATE_LEFT") {
-            game.active_rotation = game.active_rotation->left_rotation;
+            if(!checkCollision(game.pos,game)){
+            game.active_rotation = game.active_rotation->left_rotation;}
         } else if (line == "ROTATE_RIGHT") {
-            game.active_rotation = game.active_rotation->right_rotation;
+            if(!checkCollision(game.pos,game)){
+            game.active_rotation = game.active_rotation->right_rotation;}
         } else if (line == "MOVE_LEFT") {
-            game.pos--;
+            if(!checkCollision(game.pos,game)){
+            game.pos--;}
         } else if (line == "MOVE_RIGHT") {
-            game.pos++;
+            if(!checkCollision(game.pos,game)){
+            game.pos++;}
         } else if (line == "DROP") {
             if (game.gravity_mode_on) {
-                int counter = 0;
-                int highest = 999999;
-                int lowest = 9999;
-                vector<vector<bool>> shape = game.active_rotation->shape;
-                for (int i = shape.size() - 1; i >= 0; i--) {
-                    for (int j = 0; j < shape[i].size(); j++) {
-                        if (shape[i][j] == 1) {
-                            int total = 1;
-                            int t = j + game.pos;
-                            for (int k = i; k < game.grid.size(); k++) {
-                                if (game.grid[k][t] == 1) {
-                                    break;
-                                }
-                                total++;
-                            }
-                            highest = total;
-                            game.grid[i + highest][j + game.pos] = 1;
-                            counter++;
-                            lowest = min(lowest, highest);
-                        }
-                    }
-                }
-                game.current_score += counter * lowest;
-            } else {
-                int total = 0;
-                vector<vector<bool>> shape = game.active_rotation->shape;
-                int highest = 999999;
-                for (int i = 0; i < shape.size(); i++) {
-                    for (int j = 0; j < shape[i].size(); j++) {
-                        if (shape[i][j] == 1) {
-                            highest = min(highest, downAmount(game, i, j));
-                        }
-                    }
-                }
-                for (int i = shape.size() - 1; i >= 0; i--) {
-                    for (int j = 0; j < shape[i].size(); j++) {
-                        if (shape[i][j] == 1) {
-                            game.grid[i + highest][j + game.pos] = 1;
-                            total += highest;
-                        }
-                    }
-                }
+                dropWithGravity(game);
+            } else if (!game.gravity_mode_on) {
+                dropWithoutGravity(game);
             }
 
-            /*if (powerDetection(game)) {
-                power_up(game);
-            }*/
-
+            if (checkPowerUp(game)) {
+                usePowerUp(game);
+            }
 
             bool isClear = true;
             for (int i = 0; i < game.grid.size(); i++) {
-                if (checkFullRow(game, i)) {
-                    if (isClear){
+                if (isRowFull(game, i)) {
+                    if (isClear) {
 
                         cout << "Before clearing:" << endl;
-                        for (int l = 0; l < game.rows; l++) {
-                            for (int j = 0; j < game.cols; j++) {
-                                if (game.grid[l][j] == 1 ) {
-                                    cout << occupiedCellChar;
-                                } else {
-                                    cout << unoccupiedCellChar;
-                                }
-                            }
-                            cout << endl;
-                        }
+                        printEmptyGrid(game, false);
                         isClear = false;
                     }
 
@@ -119,18 +81,19 @@ bool GameController::play(BlockFall &game, const string &commands_file) {
             if (game.active_rotation == nullptr) {
                 game.gameEnd = 1;
             }
-            if ( checkCollision( game.pos,game)) {
+            if (checkCollision(game.pos, game)) {
                 game.gameEnd = 2;
             }
-
         } else if (line == "GRAVITY_SWITCH") {
-
+            return true;
         } else if (line == "PRINT_GRID") {
 
         } else {
             cout << "Invalid command" << endl;
         }
     }
+
+    bool result = false;
 
     if (game.gameEnd == 2) {
         cout << "GAME OVER!\nNext block that couldn't fit:" << endl;
@@ -149,51 +112,44 @@ bool GameController::play(BlockFall &game, const string &commands_file) {
     }
     if (game.gameEnd == 1) {
         cout << "YOU WIN!\nNo more blocks.\nFinal grid and score:\n" << endl;
-        return true;
+        result = true;
     }
     if (game.gameEnd == 0) {
         cout << "GAME FINISHED!\nNo more commands.\nFinal grid and score:\n" << endl;
-        return true;
+        result = true;
     }
 
+    printEmptyGrid2(game);
+    cout << endl;
 
-    return false;
+    return result;
 }
 
 bool GameController::checkCollision(long pos, BlockFall &fall) {
     vector<vector<bool>> shape = fall.active_rotation->shape;
-    if(fall.active_rotation == nullptr){
+    if (fall.active_rotation == nullptr) {
         return false;
     }
-    for(int i = 0; i< fall.grid.size(); i++){
-        for(int j = 0; j< fall.grid[i].size(); j++){
-            if(shape[i][j] == 1 && fall.grid[i][j] == 1){
+    for (int i = 0; i < fall.grid.size(); i++) {
+        for (int j = 0; j < fall.grid[i].size(); j++) {
+            if (shape[i][j] == 1 && fall.grid[i][j] == 1) {
                 return true;
             }
         }
     }
 
-    if(pos + shape[0].size() > fall.grid[0].size()){
+    if (pos + shape[0].size() > fall.grid[0].size()) {
         return true;
     }
 
     return false;
-}
-
-bool GameController::checkFullRow(BlockFall &fall, int row) {
-    for (int i = 0; i < fall.grid[row].size(); i++) {
-        if (fall.grid[row][i] == 0) {
-            return false;
-        }
-    }
-    return true;
 }
 
 unsigned long GameController::clearRow(BlockFall &fall, int row) {
     int sum = 0;
     for (int i = row; i > 0; i--) {
         for (int j = 0; j < fall.grid[i].size(); j++) {
-            fall.grid[i][j] = fall.grid[i-1][j];
+            fall.grid[i][j] = fall.grid[i - 1][j];
         }
     }
     sum = fall.grid[0].size();
@@ -202,6 +158,144 @@ unsigned long GameController::clearRow(BlockFall &fall, int row) {
     }
     return sum;
 }
+
+void GameController::dropWithGravity(BlockFall &fall) {
+    vector<vector<bool>> x = fall.active_rotation->shape;
+    int highest = 999999;
+    int lowest = 9999;
+    int counter = 0;
+    for (int i = x.size() - 1; i >= 0; i--) {
+        for (int j = 0; j < x[i].size(); j++) {
+            if (x[i][j] == 1) {
+                highest = downAmount(fall, i, j);
+                fall.grid[i + highest][j + fall.pos] = 1;
+                counter++;
+                lowest = min(lowest, highest);
+            }
+        }
+    }
+    fall.current_score += lowest * counter;
+}
+
+int GameController::downAmountShape(BlockFall &fall) {
+    vector<vector<bool>> x = fall.active_rotation->shape;
+    int ans = 1000000;
+    for (int i = 0; i < x.size(); i++) {
+        for (int j = 0; j < x[i].size(); j++) {
+            if (x[i][j] == 1) {
+                ans = min(ans, downAmount(fall, i, j));
+            }
+        }
+    }
+    return ans;
+}
+
+void GameController::dropWithoutGravity(BlockFall &fall) {
+    vector<vector<bool>> x = fall.active_rotation->shape;
+    int ans = downAmountShape(fall);
+    int score = 0;
+    for (int i = x.size() - 1; i >= 0; i--) {
+        for (int j = 0; j < x[i].size(); j++) {
+            if (x[i][j] == 1) {
+                fall.grid[i + ans][j + fall.pos] = 1;
+                score += ans;
+            }
+        }
+    }
+    fall.current_score += score;
+}
+
+bool GameController::checkPowerUp(BlockFall &fall) {
+    vector<vector<bool>> x = fall.power_up;
+    vector<vector<int>> y = fall.grid;
+    for (int i = 0; i <= y.size() - x.size(); i++) {
+        for (int j = 0; j <= y[0].size() - x[0].size(); j++) {
+            bool trial = true;
+            for (int k = 0; k < x.size(); k++) {
+                for (int l = 0; l < x[0].size(); l++) {
+                    if (x[k][l] != y[i + k][j + l]) {
+                        trial = false;
+                    }
+                }
+            }
+            if (trial) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void GameController::usePowerUp(BlockFall &fall) {
+    //first2 = false;
+    cout << "Before clearing:" << endl;
+    printEmptyGrid(fall, false);
+    int sum = clear(fall);
+    fall.current_score += sum + 1000;
+}
+
+void GameController::printEmptyGrid(BlockFall &fall, bool b) {
+    if (!b) {
+        printEmptyGrid2(fall);
+    } else {
+        vector<vector<bool>> x = fall.active_rotation->shape;
+
+        for (int i = 0; i < fall.rows; i++) {
+            for (int j = 0; j < fall.cols; j++) {
+                int k = j - fall.pos;
+                int z = 0;
+                if (k >= 0 && k < x[0].size() && i < x.size()) {
+                    z = x[i][k];
+                }
+                if (fall.grid[i][j] == 1 || z == 1) {
+                    cout << occupiedCellChar;
+                } else {
+                    cout << unoccupiedCellChar;
+                }
+            }
+            cout << endl;
+        }
+    }
+    cout << endl;
+    cout << endl;
+}
+
+void GameController::printEmptyGrid2(BlockFall &fall) {
+    for (int i = 0; i < fall.rows; i++) {
+        for (int j = 0; j < fall.cols; j++) {
+            if (fall.grid[i][j] == 1) {
+                cout << occupiedCellChar;
+            } else {
+                cout << unoccupiedCellChar;
+            }
+        }
+        cout << endl;
+    }
+
+}
+
+int GameController::clear(BlockFall &fall) {
+    int sum = 0;
+    for (int i = 0; i < fall.grid.size(); i++) {
+        for (int j = 0; j < fall.grid[i].size(); j++) {
+            sum += fall.grid[i][j];
+            fall.grid[i][j] = 0;
+        }
+    }
+    return sum;
+}
+
+bool GameController::isRowFull(BlockFall &fall, int row) {
+    for (int i = 0; i < fall.grid[row].size(); i++) {
+        if (fall.grid[row][i] == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
 
 
 

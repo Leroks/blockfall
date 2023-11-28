@@ -12,9 +12,25 @@ public:
 
     bool checkCollision(long pos, BlockFall &fall);
 
-    bool checkFullRow(BlockFall &fall, int i);
-
     unsigned long clearRow(BlockFall &fall, int i);
+
+    void dropWithGravity(BlockFall &fall);
+
+    void dropWithoutGravity(BlockFall &fall);
+
+    int downAmountShape(BlockFall &fall);
+
+    bool checkPowerUp(BlockFall &fall);
+
+    void usePowerUp(BlockFall &fall);
+
+    void printEmptyGrid(BlockFall &fall, bool b);
+
+    void printEmptyGrid2(BlockFall &fall);
+
+    int clear(BlockFall &fall);
+
+    bool isRowFull(BlockFall &fall, int i);
 };
 
 
